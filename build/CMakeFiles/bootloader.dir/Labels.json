@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}

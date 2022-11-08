@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/bootloader-complete.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

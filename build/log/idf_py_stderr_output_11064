@@ -1,0 +1,11 @@
+fatal: not a git repository (or any of the parent directories): .git
+CMake Error at C:/use/esp-idf-master/tools/cmake/build.cmake:263 (message):
+  Failed to resolve component 'jsmn'.
+Call Stack (most recent call first):
+  C:/use/esp-idf-master/tools/cmake/build.cmake:305 (__build_resolve_and_add_req)
+  C:/use/esp-idf-master/tools/cmake/build.cmake:592 (__build_expand_requirements)
+  C:/use/esp-idf-master/tools/cmake/project.cmake:440 (idf_build_process)
+  CMakeLists.txt:10 (project)
+
+
+ninja: error: rebuilding 'build.ninja': subcommand failed

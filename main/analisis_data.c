@@ -36,7 +36,7 @@
 #include "esp_http_client.h"
 
 #define MAX_HTTP_RECV_BUFFER 512
-#define MAX_HTTP_OUTPUT_BUFFER 2048
+#define MAX_HTTP_OUTPUT_BUFFER 1024
 
 static const char *TAG = "ANALISIS_DATA";
 
@@ -44,7 +44,7 @@ static const char *TAG = "ANALISIS_DATA";
 char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
 char output_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
 char *token = "";
-char *temperatura = "";
+char *revolve_api = "";
 
 
 
@@ -118,12 +118,59 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-static void http_get_temperatura_interior(){
+static void http_get_temperatura_interior(int time, int range){
     int content_length = 0;
     char str[1024];
     memset(str, 0, sizeof(str));
     strcat(str, "Bearer ");
     strcat(str ,token);
+
+    esp_http_client_config_t config = {
+        .event_handler = _http_event_handler,
+        .url = "https://thingsboard.cloud:443/api/plugins/telemetry/DEVICE/d5c06100-61d0-11ed-b28a-eb999599ab40/values/timeseries?keys=temperature",
+        .buffer_size_tx = 1024,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    // GET
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
+    esp_http_client_set_header(client, "Authorization", str);
+    
+    esp_err_t err = esp_http_client_open(client, 0);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open HTTP connection: %s", esp_err_to_name(err));
+    } else {
+        content_length = esp_http_client_fetch_headers(client);
+        if (content_length < 0) {
+            ESP_LOGE(TAG, "HTTP client fetch headers failed");
+        } else {
+            int data_read = esp_http_client_read_response(client, local_response_buffer, MAX_HTTP_OUTPUT_BUFFER);
+            if (data_read >= 0) {
+                ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+                cJSON* root = NULL;
+                root = cJSON_Parse(local_response_buffer);
+                cJSON* cjson_item = cJSON_GetObjectItem(root, "temperature");
+                cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
+                cJSON* cjson_temperatura = cJSON_GetObjectItem(cjson_results,"value");
+                revolve_api = cjson_temperatura->valuestring;
+                ESP_LOGI(TAG, "[x] get temperatura finish : %s", revolve_api);
+            } else {
+                ESP_LOGE(TAG, "Failed to read response");
+            }
+        }
+    }
+    esp_http_client_cleanup(client);
+}
+
+static void http_get_humedad(int time, int range){
+    int content_length = 0;
+    char str[1024];
+    memset(str, 0, sizeof(str));
+    strcat(str, "Bearer ");
+    strcat(str ,token);
+    
     esp_http_client_config_t config = {
         .event_handler = _http_event_handler,
         .url = "https://thingsboard.cloud:443/api/plugins/telemetry/DEVICE/76317650-590e-11ec-a919-556e8dbef35c/values/timeseries?keys=Temperatura%20Interior",
@@ -153,8 +200,8 @@ static void http_get_temperatura_interior(){
                 cJSON* cjson_item = cJSON_GetObjectItem(root, "Temperatura Interior");
                 cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
                 cJSON* cjson_temperatura = cJSON_GetObjectItem(cjson_results,"value");
-                temperatura = cjson_temperatura->valuestring;
-                ESP_LOGI(TAG, "[x] get temperatura finish : %s", temperatura);
+                revolve_api = cjson_temperatura->valuestring;
+                ESP_LOGI(TAG, "[x] get temperatura finish : %s", revolve_api);
             } else {
                 ESP_LOGE(TAG, "Failed to read response");
             }
@@ -174,7 +221,7 @@ static void http_get_token()
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
     // POST
-    const char *post_data = "{\"username\":\"ivan.cmaya@alumnos.upm.es\", \"password\":\"SBC21g09\"}";
+    const char *post_data = "{\"username\":\"hongyan.xie@alumnos.upm.es\", \"password\":\"19980816xhy\"}";
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_post_field(client, post_data, strlen(post_data));
@@ -228,23 +275,47 @@ char *send_text(int tem_or_hum, int time, int range){
     //根据三个值判断具体的查询数据
     http_get_token();
     char *text_return = "";
+    char test_text[1024];
     if(tem_or_hum == 0){
-        http_get_temperatura_interior();
-        ESP_LOGI(TAG, "temperatura: %s", temperatura);
-        static char temperatura_text[1024];
-        memset(temperatura_text, 0, sizeof(temperatura_text));
-        strcat(temperatura_text,"La temperatura de ahora es");
-        strcat(temperatura_text,temperatura);
-            
-        ESP_LOGI(TAG, "Temperatura_text: %s ", temperatura_text);
-        text_return = temperatura_text;
+        http_get_temperatura_interior(time, range);
+        ESP_LOGI(TAG, "temperatura: %s", revolve_api);
+        
+        memset(test_text, 0, sizeof(test_text));
+        strcat(test_text,"La temperatura de ahora es");
+        strcat(test_text,revolve_api);
     }
     else if(tem_or_hum == 1){
-        text_return = "La humedad de ahora es ";
+        http_get_humedad(time, range);
+        ESP_LOGI(TAG, "humedad: %s", revolve_api);
+        static char humedad_text[1024];
+        memset(test_text, 0, sizeof(test_text));
+        strcat(test_text,"La humedad de ahora es ");
+        strcat(test_text,revolve_api);
     }
     else{
         text_return = send_error();
     }
+
+
+    if(time == 0){
+
+    }
+    else if(time == 1){
+
+    }
+    else if(time == 2){
+
+    }
+    else if(time == 3){
+
+    }
+    else{
+            
+    }
+
+
+    ESP_LOGI(TAG, "text_return: %s ", test_text);
+    text_return = test_text;
     
     return text_return;
 }

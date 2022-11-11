@@ -1,0 +1,7 @@
+[0/1] Re-running CMake...
+-- ccache will be used for faster recompilation
+-- Building ESP-IDF components for target esp32
+-- Configuring incomplete, errors occurred!
+See also "C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/CMakeFiles/CMakeOutput.log".
+FAILED: build.ninja 
+C:\Users\a3761\.espressif\tools\cmake\3.20.3\bin\cmake.exe --regenerate-during-build -SC:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot -BC:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot\build

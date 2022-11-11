@@ -1,0 +1,17 @@
+[1/9] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot\build\bootloader\esp-idf\esptool_py && C:\Users\a3761\.espressif\python_env\idf4.4_py3.10_env\Scripts\python.exe C:/Users/a3761/Desktop/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader/bootloader.bin"
+Bootloader binary size 0x62c0 bytes. 0xd40 bytes (12%) free.
+[2/7] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+../main/main.c: In function 'voice_read_task':
+../main/main.c:113:15: warning: unused variable 'buf_len' [-Wunused-variable]
+     const int buf_len = 2 * 1024;
+               ^~~~~~~
+[3/7] Linking C static library esp-idf\main\libmain.a
+[4/7] Generating ld/sections.ld
+[5/7] Linking CXX executable lyrat_chatbot.elf
+[6/7] Generating binary image from built executable
+esptool.py v3.2-dev
+Merged 25 ELF sections
+Generated C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/lyrat_chatbot.bin
+[7/7] cmd.exe /C "cd /D C:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot\build\esp-idf\esptool_py && C:\Users\a3761\.espressif\python_env\idf4.4_py3.10_env\Scripts\python.exe C:/Users/a3761/Desktop/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/partition_table/partition-table.bin C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/lyrat_chatbot.bin"
+lyrat_chatbot.bin binary size 0x107fe0 bytes. Smallest app partition is 0x300000 bytes. 0x1f8020 bytes (66%) free.

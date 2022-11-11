@@ -46,9 +46,10 @@ audio_event_iface_handle_t evt = NULL;
 //sr tts
 void google_sr_begin(google_sr_handle_t sr)
 {
-    if (led_handle) {
+    /*if (led_handle) {
         periph_led_blink(led_handle, get_green_led_gpio(), 500, 500, true, -1, 0);
     }
+    */
     ESP_LOGW(TAG, "Start speaking now");
 }
 
@@ -605,11 +606,18 @@ void chatbot_task(void *pv)
     audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
 
     ESP_LOGI(TAG, "[ 5 ] Listen for all pipeline events");
+    setup_player();
     //google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
-    
+    char *texto = "";
+    texto = send_text(0, 0, 0);
+    ESP_LOGI(TAG, "[+++] texto:%s", texto);
+    google_tts_start(tts, texto, GOOGLE_TTS_LANG);
+
     //audio_board_init();
+    /*
     setup_player();
     ESP_LOGI(TAG, "[ + ] set up player finish");
+    AUDIO_MEM_SHOW(TAG);
     start_recorder();
     ESP_LOGI(TAG, "[ + ] star recorder finish");
     rec_q = xQueueCreate(3, sizeof(int));
@@ -644,7 +652,7 @@ void chatbot_task(void *pv)
         }
     }
     vTaskDelete(NULL);
-
+*/
     int a = 0;
     int *pos = &a;
     int tem_or_hum = 0;
@@ -681,7 +689,7 @@ void chatbot_task(void *pv)
             continue;
         }
         
-        if (msg.cmd == PERIPH_BUTTON_PRESSED || voice_reading) {
+        if (msg.cmd == PERIPH_BUTTON_PRESSED) {
             //加上唤醒词代码
             google_tts_stop(tts);
             ESP_LOGI(TAG, "[ * ] Resuming pipeline");
@@ -690,7 +698,7 @@ void chatbot_task(void *pv)
         
             ESP_LOGI(TAG, "[ * ] Stop pipeline");
             //ESP_LOGI(TAG, "[ * ] %d", *pos);
-            periph_led_stop(led_handle, get_green_led_gpio());
+            //periph_led_stop(led_handle, get_green_led_gpio());
 
             char *original_text = google_sr_stop(sr);
             //char *original_text = "temperatura";

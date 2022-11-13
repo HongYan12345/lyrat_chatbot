@@ -707,7 +707,7 @@ void chatbot_task(void *pv)
             }
             ESP_LOGI(TAG, "Original text = %s", original_text);
             ESP_LOGI(TAG, "pos = %d", *pos);
-            if(*pos == 0){//
+            if(*pos == 0){
                 text = send_problema(original_text, pos);
             }
             else if(*pos == 1){

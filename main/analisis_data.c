@@ -253,8 +253,17 @@ char *send_problema(const char *text, int *pos){
     char *text_return = "";
     if(*pos == 0){
         ESP_LOGI(TAG, "[x] analisis...");
-        *pos = 1;
-        text_return = "Estas pregundado la temperatura?";
+        if(strcmp(original_text, "temperatura")){
+            *pos = 1;
+            text_return = "Estas pregundado temperatura?";
+        }
+        else if(strcmp(original_text, "humedad")){
+            *pos = 2;
+            text_return = "Estas pregundado humedad?";
+        }
+        else{
+            return send_error();
+        }
     }
     else if(*pos == 1 && *pos == 2){
         *pos = 3;
@@ -275,52 +284,70 @@ char *send_text(int tem_or_hum, int time, int range){
     //根据三个值判断具体的查询数据
     http_get_token();
     char *text_return = "";
-    char test_text[1024];
+    static char test_text[1024];
     if(tem_or_hum == 0){
         http_get_temperatura_interior(time, range);
         ESP_LOGI(TAG, "temperatura: %s", revolve_api);
-        
         memset(test_text, 0, sizeof(test_text));
-        strcat(test_text,"La temperatura de ahora es");
-        strcat(test_text,revolve_api);
+        strcat(test_text,"La temperatura ");
     }
     else if(tem_or_hum == 1){
         http_get_humedad(time, range);
         ESP_LOGI(TAG, "humedad: %s", revolve_api);
-        static char humedad_text[1024];
         memset(test_text, 0, sizeof(test_text));
-        strcat(test_text,"La humedad de ahora es ");
-        strcat(test_text,revolve_api);
+        strcat(test_text,"La humedad ");
     }
     else{
         text_return = send_error();
+        return text_return;
     }
 
-
-    if(time == 0){
-
+    if(range == 1){
+        //max
+        strcat(test_text,"maxima");
     }
-    else if(time == 1){
-
+    else if(range == 2){
+            //min
+        strcat(test_text,"minima");
     }
-    else if(time == 2){
-
-    }
-    else if(time == 3){
-
+    else if(range == 3){
+            //medio
+        strcat(test_text,"media");
     }
     else{
-            
+        text_return = send_error();
+        return text_return;
     }
 
+    if(time == 1){
+        //hoy
+        strcat(test_text,"de hoy es");
+    }
+    else if(time == 2){
+        //ayer
+        strcat(test_text,"de ayer es");
+    }
+    else if(time == 3){
+        //semana
+        strcat(test_text,"de semana es");
+    }
+    else if(time == 4){
+        //mes
+        strcat(test_text,"de mes es");
+    }
+    else{
+        text_return = send_error();
+        return text_return;
+    }
 
+    strcat(test_text,revolve_api);
     ESP_LOGI(TAG, "text_return: %s ", test_text);
     text_return = test_text;
     
     return text_return;
 }
 char *send_error(){
-    char *text_error = "no entiendo, pregunta otra vez";
+    static char *text_error = "no entiendo, pregunta otra vez";
     return text_error;
 
 }

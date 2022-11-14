@@ -253,11 +253,11 @@ char *send_problema(const char *text, int *pos){
     char *text_return = "";
     if(*pos == 0){
         ESP_LOGI(TAG, "[x] analisis...");
-        if(strcmp(original_text, "temperatura")){
+        if(strcmp(text, "temperatura")){
             *pos = 1;
             text_return = "Estas pregundado temperatura?";
         }
-        else if(strcmp(original_text, "humedad")){
+        else if(strcmp(text, "humedad")){
             *pos = 2;
             text_return = "Estas pregundado humedad?";
         }
@@ -283,7 +283,7 @@ char *send_problema(const char *text, int *pos){
 char *send_text(int tem_or_hum, int time, int range){
     //根据三个值判断具体的查询数据
     http_get_token();
-    char *text_return = "";
+    static char *text_return = "";
     static char test_text[1024];
     if(tem_or_hum == 0){
         http_get_temperatura_interior(time, range);

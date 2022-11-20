@@ -18,7 +18,6 @@
 #include "google_tts.h"
 #include "google_sr.h"
 #include "analisis_data.h"
-#include "board.h"
 
 #include "audio_idf_version.h"
 
@@ -38,18 +37,14 @@ static const char *TAG = "LYRAT";
 #define EXAMPLE_RECORD_PLAYBACK_SAMPLE_RATE (16000)
 
 esp_periph_handle_t led_handle = NULL;
-google_tts_handle_t tts = NULL;
-google_sr_handle_t sr =NULL;
-esp_periph_set_handle_t set = NULL;
-audio_event_iface_handle_t evt = NULL;
 
 //sr tts
 void google_sr_begin(google_sr_handle_t sr)
 {
-    /*if (led_handle) {
+    if (led_handle) {
         periph_led_blink(led_handle, get_green_led_gpio(), 500, 500, true, -1, 0);
     }
-    */
+    
     ESP_LOGW(TAG, "Start speaking now");
 }
 
@@ -145,14 +140,6 @@ static void voice_read_task(void *args)
 
 static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 {
-    /*
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
-        // NVS partition was truncated and needs to be erased
-        // Retry nvs_flash_init
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }*/
 
 #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0))
     ESP_ERROR_CHECK(esp_netif_init());
@@ -312,17 +299,6 @@ static void log_clear(void)
 void wake_start(void)
 {
     log_clear();
-
-    
-    /*
-    if (set != NULL) {
-        esp_periph_set_register_callback(set, periph_callback, NULL);
-    }
-    */
-    //audio_board_sdcard_init(set, SD_MODE_1_LINE);
-    //audio_board_key_init(set);
-    //audio_board_init();
-    setup_player();
     start_recorder();
     audio_thread_create(NULL, "read_task", voice_read_task, NULL, 8 * 1024, 5, true, 0);
 }
@@ -378,7 +354,10 @@ void chatbot_task(void *pv)
     ESP_LOGI(TAG, "[ 2 ] Start codec chip");
     //audio_board_handle_t board_handle = audio_board_init();
     //audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
-
+    setup_player();
+    AUDIO_MEM_SHOW(TAG);
+    start_recorder();
+    AUDIO_MEM_SHOW(TAG);
     google_sr_config_t sr_config = {
         .api_key = CONFIG_GOOGLE_API_KEY,
         .lang_code = GOOGLE_SR_LANG,
@@ -406,7 +385,7 @@ void chatbot_task(void *pv)
     audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
 
     ESP_LOGI(TAG, "[ 5 ] Listen for all pipeline events");
-    setup_player();
+    //setup_player();
 
     //char *texto = "";
     //texto = send_text(0, 1, 1);
@@ -414,11 +393,12 @@ void chatbot_task(void *pv)
     //google_tts_start(tts, texto, GOOGLE_TTS_LANG);
 
     //audio_board_init();
-    
+    /*
     ESP_LOGI(TAG, "[ + ] set up player finish");
     AUDIO_MEM_SHOW(TAG);
     start_recorder();
     ESP_LOGI(TAG, "[ + ] star recorder finish");
+    */
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
 
@@ -595,8 +575,9 @@ void app_main(void)
 {
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_INFO);
+    rec_q = xQueueCreate(3, sizeof(int));
     //wake_start();
     //xTaskCreate(chatbot_task, "chat_task", 2 * 4096, NULL, 5, NULL);
-    rec_q = xQueueCreate(3, sizeof(int));
+    
     audio_thread_create(NULL, "read_task", chatbot_task, NULL, 8 * 1024, 5, true, 0);
 }

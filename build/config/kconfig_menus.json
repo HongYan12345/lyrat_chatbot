@@ -14954,7 +14954,10 @@
                                 "help": "Number of DMA receive buffers, each buffer is 1600 bytes.",
                                 "id": "ETH_OPENETH_DMA_RX_BUFFER_NUM",
                                 "name": "ETH_OPENETH_DMA_RX_BUFFER_NUM",
-                                "range": null,
+                                "range": [
+                                    1,
+                                    64
+                                ],
                                 "title": "Number of Ethernet DMA Rx buffers",
                                 "type": "int"
                             },
@@ -14964,7 +14967,10 @@
                                 "help": "Number of DMA transmit buffers, each buffer is 1600 bytes.",
                                 "id": "ETH_OPENETH_DMA_TX_BUFFER_NUM",
                                 "name": "ETH_OPENETH_DMA_TX_BUFFER_NUM",
-                                "range": null,
+                                "range": [
+                                    1,
+                                    64
+                                ],
                                 "title": "Number of Ethernet DMA Tx buffers",
                                 "type": "int"
                             }

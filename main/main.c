@@ -299,7 +299,11 @@ static void log_clear(void)
 void wake_start(void)
 {
     log_clear();
+    AUDIO_MEM_SHOW(TAG);
+    setup_player();
+    AUDIO_MEM_SHOW(TAG);
     start_recorder();
+    AUDIO_MEM_SHOW(TAG);
     audio_thread_create(NULL, "read_task", voice_read_task, NULL, 8 * 1024, 5, true, 0);
 }
 
@@ -328,7 +332,7 @@ void chatbot_task(void *pv)
         .password = CONFIG_WIFI_PASSWORD,
     };
     esp_periph_handle_t wifi_handle = periph_wifi_init(&wifi_cfg);
-
+/*
     // Initialize Button peripheral
     periph_button_cfg_t btn_cfg = {
         .gpio_mask = (1ULL << get_input_mode_id()) | (1ULL << get_input_rec_id()),
@@ -343,11 +347,11 @@ void chatbot_task(void *pv)
     };
     led_handle = periph_led_init(&led_cfg);
 
-
+*/
     // Start wifi & button peripheral
-    esp_periph_start(set, button_handle);
+    //esp_periph_start(set, button_handle);
     esp_periph_start(set, wifi_handle);
-    esp_periph_start(set, led_handle);
+    //esp_periph_start(set, led_handle);
 
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
 

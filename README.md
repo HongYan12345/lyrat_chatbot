@@ -22,3 +22,6 @@ Load and run the example:
  - Speak something in Chinese. If you do not know Chinese then use "Google Translate" to translate some text into Chinese and speak it for you.
  - After finish, release the [Rec] button. Wait a second or two for Google to receive and process the message and then the board to play it back.
 - To stop the pipeline press [Mode] button on the audio board.
+
+error-
+dram error

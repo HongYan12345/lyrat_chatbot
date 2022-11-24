@@ -157,6 +157,132 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGE(TAG2, "rec cancel send failed");
             }
         }
+/*
+        int a = 0;
+        int *pos = &a;
+        int tem_or_hum = 0;
+        int time = 0;
+        int range = 0;
+        char *text = "";
+        while (1) {
+            audio_event_iface_msg_t msg;
+        
+        if (audio_event_iface_listen(evt, &msg, portMAX_DELAY) != ESP_OK) {
+            ESP_LOGW(TAG, "[ * ] Event process failed: src_type:%d, source:%p cmd:%d, data:%p, data_len:%d",
+                     msg.source_type, msg.source, msg.cmd, msg.data, msg.data_len);
+            continue;
+        }
+
+        ESP_LOGI(TAG, "[ * ] Event received: src_type:%d, source:%p cmd:%d, data:%p, data_len:%d",
+                 msg.source_type, msg.source, msg.cmd, msg.data, msg.data_len);
+
+        if (google_tts_check_event_finish(tts, &msg)) {
+            ESP_LOGI(TAG, "[ * ] TTS Finish");
+            continue;
+        }
+
+        // It's MODE button
+        if ((int)msg.data == get_input_mode_id()) {
+            break;
+        }
+
+        if ((int)msg.data != get_input_rec_id()) {
+            continue;
+        }
+            google_tts_stop(tts);
+            ESP_LOGI(TAG, "[ * ] Resuming pipeline");
+            google_sr_start(sr);
+            ESP_LOGI(TAG, "[ * ] Stop pipeline");
+            //periph_led_stop(led_handle, get_green_led_gpio());
+
+            char *original_text = google_sr_stop(sr);
+        
+            if (original_text == NULL) {
+                continue;
+            }
+            ESP_LOGI(TAG, "Original text = %s", original_text);
+            ESP_LOGI(TAG, "pos = %d", *pos);
+            if(*pos == 0){
+                text = send_problema(original_text, pos);
+            }
+            else if(*pos == 1){
+                ESP_LOGI(TAG, "[ * ] temperatura");
+                if(strcmp(original_text, "si")){
+                    tem_or_hum = 1;
+                    text = send_problema(original_text, pos);
+                }
+                else{
+                    text = send_error();
+                }
+            }
+            else if(*pos == 2){ 
+                ESP_LOGI(TAG, "[ * ] humedad");
+                if(strcmp(original_text, "si")){
+                    tem_or_hum = 2;
+                    text = send_problema(original_text, pos);
+                }
+                else{
+                    text = send_error();
+                }
+            }
+            else if(*pos == 3){
+                ESP_LOGI(TAG, "[ * ] hoy, ayer, semana, mes");
+                if(strcmp(original_text, "hoy")){
+                    time = 1;
+                }
+                else if(strcmp(original_text, "ayer")){
+                    time = 2;
+                }
+                else if(strcmp(original_text, "semana")){
+                    time = 3;
+                }
+                else if(strcmp(original_text, "mes")){
+                    time = 4;
+                }
+                
+                if(time == 0){
+                    text = send_error();
+                }
+                else{
+                    text = send_problema(original_text, pos);
+                }
+            }
+            else if(*pos == 4){
+                ESP_LOGI(TAG, "[ * ] max, min ,medio");
+                if(strcmp(original_text, "maximo")){
+                range = 1;
+                }
+                else if(strcmp(original_text, "minimo")){
+                    range = 2;
+                }
+                else if(strcmp(original_text, "medio")){
+                    range = 3;
+                }
+                if(range == 0){
+                    text = send_error();
+                }
+                else{
+                    text = send_text(tem_or_hum, time, range);
+                }
+            }
+            else{
+                ESP_LOGI(TAG, "[ * ] error");
+                text = send_error();
+            }
+            ESP_LOGI(TAG, "[ * ] next");
+            google_tts_start(tts, text, GOOGLE_TTS_LANG);
+
+        }
+        ESP_LOGI(TAG, "[ 6 ] Stop audio_pipeline");
+        google_sr_destroy(sr);
+        google_tts_destroy(tts);
+        esp_periph_set_stop_all(set);
+        audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
+
+        audio_event_iface_destroy(evt);
+        esp_periph_set_destroy(set);
+        vTaskDelete(NULL);
+*/
     } else if (AUDIO_REC_VAD_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_START");
         if (!voice_reading) {
@@ -296,6 +422,8 @@ static void log_clear(void)
     esp_log_level_set("AUDIO_EVT", ESP_LOG_ERROR);
 }
 
+/*
+
 void wake_start(void)
 {
     log_clear();
@@ -306,6 +434,7 @@ void wake_start(void)
     AUDIO_MEM_SHOW(TAG);
     audio_thread_create(NULL, "read_task", voice_read_task, NULL, 8 * 1024, 5, true, 0);
 }
+*/
 
 void chatbot_task(void *pv)
 {
@@ -356,8 +485,7 @@ void chatbot_task(void *pv)
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
 
     ESP_LOGI(TAG, "[ 2 ] Start codec chip");
-    //audio_board_handle_t board_handle = audio_board_init();
-    //audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
+
     setup_player();
     AUDIO_MEM_SHOW(TAG);
     start_recorder();
@@ -389,25 +517,11 @@ void chatbot_task(void *pv)
     audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
 
     ESP_LOGI(TAG, "[ 5 ] Listen for all pipeline events");
-    //setup_player();
 
-    //char *texto = "";
-    //texto = send_text(0, 1, 1);
-    //ESP_LOGI(TAG, "[+++] texto:%s", texto);
-    //google_tts_start(tts, texto, GOOGLE_TTS_LANG);
-
-    //audio_board_init();
-    /*
-    ESP_LOGI(TAG, "[ + ] set up player finish");
-    AUDIO_MEM_SHOW(TAG);
-    start_recorder();
-    ESP_LOGI(TAG, "[ + ] star recorder finish");
-    */
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
 
     while (true) {
-        ESP_LOGI(TAG, "[ 6 ] star wake up");
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {
             switch (msg_2) {
                 case REC_START: {
@@ -435,148 +549,14 @@ void chatbot_task(void *pv)
     }
     vTaskDelete(NULL);
 
-    int a = 0;
-    int *pos = &a;
-    int tem_or_hum = 0;
-    int time = 0;
-    int range = 0;
-    char *text = "";
-    while (1) {
-        audio_event_iface_msg_t msg;
-        
-        if (audio_event_iface_listen(evt, &msg, portMAX_DELAY) != ESP_OK) {
-            ESP_LOGW(TAG, "[ * ] Event process failed: src_type:%d, source:%p cmd:%d, data:%p, data_len:%d",
-                     msg.source_type, msg.source, msg.cmd, msg.data, msg.data_len);
-            continue;
-        }
-
-        ESP_LOGI(TAG, "[ * ] Event received: src_type:%d, source:%p cmd:%d, data:%p, data_len:%d",
-                 msg.source_type, msg.source, msg.cmd, msg.data, msg.data_len);
-
-        if (google_tts_check_event_finish(tts, &msg)) {
-            ESP_LOGI(TAG, "[ * ] TTS Finish");
-            continue;
-        }
-
-        if (msg.source_type != PERIPH_ID_BUTTON) {
-            continue;
-        }
-
-        // It's MODE button
-        if ((int)msg.data == get_input_mode_id()) {
-            break;
-        }
-
-        if ((int)msg.data != get_input_rec_id()) {
-            continue;
-        }
-        
-        if (msg.cmd == PERIPH_BUTTON_PRESSED) {
-            //加上唤醒词代码
-            google_tts_stop(tts);
-            ESP_LOGI(TAG, "[ * ] Resuming pipeline");
-            google_sr_start(sr);
-        } else if (msg.cmd == PERIPH_BUTTON_RELEASE || msg.cmd == PERIPH_BUTTON_LONG_RELEASE) {
-        
-            ESP_LOGI(TAG, "[ * ] Stop pipeline");
-            //ESP_LOGI(TAG, "[ * ] %d", *pos);
-            //periph_led_stop(led_handle, get_green_led_gpio());
-
-            char *original_text = google_sr_stop(sr);
-            //char *original_text = "temperatura";
-            if (original_text == NULL) {
-                continue;
-            }
-            ESP_LOGI(TAG, "Original text = %s", original_text);
-            ESP_LOGI(TAG, "pos = %d", *pos);
-            if(*pos == 0){
-                text = send_problema(original_text, pos);
-            }
-            else if(*pos == 1){
-                ESP_LOGI(TAG, "[ * ] temperatura");
-                if(strcmp(original_text, "si")){
-                    tem_or_hum = 1;
-                    text = send_problema(original_text, pos);
-                }
-                else{
-                    text = send_error();
-                }
-            }
-            else if(*pos == 2){
-                ESP_LOGI(TAG, "[ * ] humedad");
-                if(strcmp(original_text, "si")){
-                    tem_or_hum = 2;
-                    text = send_problema(original_text, pos);
-                }
-                else{
-                    text = send_error();
-                }
-            }
-            else if(*pos == 3){
-                ESP_LOGI(TAG, "[ * ] hoy, ayer, semana, mes");
-                if(strcmp(original_text, "hoy")){
-                    time = 1;
-                }
-                else if(strcmp(original_text, "ayer")){
-                    time = 2;
-                }
-                else if(strcmp(original_text, "semana")){
-                    time = 3;
-                }
-                else if(strcmp(original_text, "mes")){
-                    time = 4;
-                }
-                
-                if(time == 0){
-                    text = send_error();
-                }
-                else{
-                    text = send_problema(original_text, pos);
-                }
-            }
-            else if(*pos == 4){
-                ESP_LOGI(TAG, "[ * ] max, min ,medio");
-                if(strcmp(original_text, "maximo")){
-                    range = 1;
-                }
-                else if(strcmp(original_text, "minimo")){
-                    range = 2;
-                }
-                else if(strcmp(original_text, "medio")){
-                    range = 3;
-                }
-
-                if(range == 0){
-                    text = send_error();
-                }
-                else{
-                    text = send_text(tem_or_hum, time, range);
-                }
-            }
-            else{
-                ESP_LOGI(TAG, "[ * ] error");
-                text = send_error();
-            }
-            ESP_LOGI(TAG, "[ * ] next");
-            google_tts_start(tts, text, GOOGLE_TTS_LANG);
-        }
-
-    }
-    ESP_LOGI(TAG, "[ 6 ] Stop audio_pipeline");
-    google_sr_destroy(sr);
-    google_tts_destroy(tts);
-    esp_periph_set_stop_all(set);
-    audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
-
-    audio_event_iface_destroy(evt);
-    esp_periph_set_destroy(set);
-    vTaskDelete(NULL);
+    
 }
 
 
 
 void app_main(void)
 {
+    log_clear();
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_INFO);
     rec_q = xQueueCreate(3, sizeof(int));

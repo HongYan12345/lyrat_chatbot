@@ -1726,7 +1726,7 @@ build esp-idf/esptool_py/rebuild_cache: phony esp-idf/esptool_py/CMakeFiles/rebu
 # Custom command for esp-idf\esptool_py\CMakeFiles\bootloader_check_size
 
 build esp-idf/esptool_py/CMakeFiles/bootloader_check_size: CUSTOM_COMMAND || _project_elf_src bootloader.elf esp-idf/bootloader_support/libbootloader_support.a esp-idf/efuse/libefuse.a esp-idf/esp_common/libesp_common.a esp-idf/esp_hw_support/libesp_hw_support.a esp-idf/esp_rom/libesp_rom.a esp-idf/esp_system/libesp_system.a esp-idf/hal/libhal.a esp-idf/log/liblog.a esp-idf/main/libmain.a esp-idf/micro-ecc/libmicro-ecc.a esp-idf/soc/libsoc.a esp-idf/spi_flash/libspi_flash.a esp-idf/xtensa/libxtensa.a gen_project_binary
-  COMMAND = cmd.exe /C "cd /D C:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot\build\bootloader\esp-idf\esptool_py && C:\Users\a3761\.espressif\python_env\idf4.4_py3.10_env\Scripts\python.exe C:/Users/a3761/Desktop/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader/bootloader.bin"
+  COMMAND = cmd.exe /C "cd /D C:\Users\a3761\Desktop\esp-idf\esp-adf\examples\cloud_services\lyrat_chatbot\build\bootloader\esp-idf\esptool_py && C:\Users\a3761\.espressif\python_env\idf4.4_py3.10_env\Scripts\python.exe C:/Users/a3761/Desktop/esp-idf/components/partition_table/check_sizes.py --offset 0x10000 bootloader 0x1000 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/bootloader/bootloader.bin"
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:

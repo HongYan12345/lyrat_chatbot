@@ -35,7 +35,7 @@ static const char *TAG = "LYRAT";
 #define GOOGLE_TTS_LANG "es-ES"       //https://cloud.google.com/text-to-speech/docs/voices
 
 #define EXAMPLE_RECORD_PLAYBACK_SAMPLE_RATE (16000)
-
+audio_pipeline_handle_t pipeline = NULL;
 esp_periph_handle_t led_handle = NULL;
 google_sr_handle_t sr = NULL;
 google_tts_handle_t tts = NULL;
@@ -130,6 +130,10 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGE(TAG2, "rec cancel send failed");
             }
         }
+        audio_pipeline_stop(pipeline);
+        audio_pipeline_wait_for_stop(pipeline);
+        //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
+        //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
         google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
         vTaskDelay(20);
         while(google_tts_check_event_finish(tts, &msg)){
@@ -297,7 +301,7 @@ static void start_recorder()
     srmodel_spiffs_init();
 #endif
     audio_element_handle_t i2s_stream_reader;
-    audio_pipeline_handle_t pipeline;
+    
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
     pipeline = audio_pipeline_init(&pipeline_cfg);
     if (NULL == pipeline) {
@@ -450,7 +454,9 @@ void chatbot_task(void *pv)
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
 
     ESP_LOGI(TAG, "[ 2 ] Start codec chip");
-
+    //esp_audio_cfg_t cfg = DEFAULT_ESP_AUDIO_CONFIG();
+    //audio_board_handle_t board_handle = audio_board_init();
+    //audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
     setup_player();
     AUDIO_MEM_SHOW(TAG);
     start_recorder();
@@ -486,6 +492,9 @@ void chatbot_task(void *pv)
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
 
+    //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
+    //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
+    //google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
     while (true) {
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {
             switch (msg_2) {

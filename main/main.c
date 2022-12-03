@@ -134,6 +134,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         audio_pipeline_wait_for_stop(pipeline);
         //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
         //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
+        
         google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
         vTaskDelay(20);
         while(google_tts_check_event_finish(tts, &msg)){
@@ -152,6 +153,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         ESP_LOGI(TAG, "[ * ] Resuming pipeline");
         google_sr_start(sr);
         ESP_LOGI(TAG, "[ * ] Stop pipeline");
+
         /*
         
         while (1) {
@@ -275,6 +277,8 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 */
     } else if (AUDIO_REC_VAD_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_STOP");
+        char *original_text = google_sr_stop(sr);
+        ESP_LOGE(TAG, "text : %s", original_text);
         if (voice_reading) {
             int msg2 = REC_STOP;
             if (xQueueSend(rec_q, &msg2, 0) != pdPASS) {
@@ -284,6 +288,8 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 
     } else if (AUDIO_REC_WAKEUP_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_END");
+        google_tts_stop(tts);
+        google_sr_stop(sr);
     } else {
         ESP_LOGE(TAG2, "Unkown event");
     }
@@ -373,7 +379,7 @@ static void start_recorder()
 #endif
     audio_rec_cfg_t cfg = AUDIO_RECORDER_DEFAULT_CFG();
     cfg.read = (recorder_data_read_t)&input_cb_for_afe;
-    cfg.sr_handle = recorder_sr_create(&recorder_sr_cfg, &cfg.sr_iface);
+    //cfg.sr_handle = recorder_sr_create(&recorder_sr_cfg, &cfg.sr_iface);
 #if RECORDER_ENC_ENABLE == (true)
     cfg.encoder_handle = recorder_encoder_create(&recorder_encoder_cfg, &cfg.encoder_iface);
 #endif
@@ -491,11 +497,14 @@ void chatbot_task(void *pv)
 
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
-
-    //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
-    //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
+    //audio_pipeline_stop(pipeline);
+    //audio_pipeline_wait_for_stop(pipeline);
+    ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
+    ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
     //google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
+    
     while (true) {
+        ESP_LOGW(TAG2, "+++++++++++++++++++++++++++++++++++++++++++++++++");
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {
             switch (msg_2) {
                 case REC_START: {

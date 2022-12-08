@@ -502,15 +502,19 @@ void chatbot_task(void *pv)
     AUDIO_MEM_SHOW(TAG);
     ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
     ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
-    //audio_recorder_destroy (recorder);
-    //audio_pipeline_stop(pipeline);
-    //audio_pipeline_wait_for_stop(pipeline);
-    //AUDIO_MEM_SHOW(TAG);
+
+    esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
+    /*
+    audio_recorder_wakenet_enable(recorder, false);
+    audio_recorder_multinet_enable(recorder, false);
+    audio_recorder_destroy (recorder);
+    audio_pipeline_stop(pipeline);
+    audio_pipeline_wait_for_stop(pipeline);
+    audio_pipeline_terminate(pipeline);
+    AUDIO_MEM_SHOW(TAG);
     //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
     //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
-    //google_tts_start(tts, "hola", GOOGLE_TTS_LANG);
-    esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
-    
+    google_tts_start(tts, "hola", GOOGLE_TTS_LANG);*/
     while (true) {
         
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {

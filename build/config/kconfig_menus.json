@@ -619,10 +619,7 @@
                         "help": "Verify that this parameter is correct and more then the execution time.\nPay attention to options such as reset to factory, trigger test partition and encryption on boot\n- these options can increase the execution time.\nNote: RTC_WDT will reset while encryption operations will be performed.",
                         "id": "BOOTLOADER_WDT_TIME_MS",
                         "name": "BOOTLOADER_WDT_TIME_MS",
-                        "range": [
-                            0,
-                            120000
-                        ],
+                        "range": null,
                         "title": "Timeout for RTC watchdog (ms)",
                         "type": "int"
                     }

@@ -31,7 +31,7 @@
 #include "freertos/task.h"
 
 #include "esp_log.h"
-
+#include "audio_tone_uri.h"
 #include "amrnb_encoder.h"
 #include "audio_element.h"
 #include "audio_idf_version.h"

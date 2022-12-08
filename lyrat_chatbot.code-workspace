@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "..\\..\\.."
+		}
+		
+	],
+	"settings": {
+		"terminal.integrated.shell.windows" : "cmd.exe",
+		"terminal.integrated.shellArgs.windows": [
+			"/k",
+			"C:/Users/a3761/Desktop/esp-idf/export.bat"
+		]
+	}
+}

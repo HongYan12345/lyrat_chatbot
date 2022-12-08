@@ -39,6 +39,7 @@ audio_pipeline_handle_t pipeline = NULL;
 esp_periph_handle_t led_handle = NULL;
 google_sr_handle_t sr = NULL;
 google_tts_handle_t tts = NULL;
+bool is_wake = false;
 
 //sr tts
 void google_sr_begin(google_sr_handle_t sr)
@@ -123,23 +124,21 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
     audio_event_iface_msg_t msg;
     if (AUDIO_REC_WAKEUP_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_START");
-
-        if (voice_reading) {
-            int msg2 = REC_CANCEL;
-            if (xQueueSend(rec_q, &msg2, 0) != pdPASS) {
-                ESP_LOGE(TAG2, "rec cancel send failed");
-            }
-        }
+        is_wake=true;
+        esp_audio_sync_play(player, tone_uri[TONE_TYPE_DINGDONG], 0);
+        /*
+        audio_recorder_wakenet_enable(recorder, false);
+        audio_recorder_multinet_enable(recorder, false);
+        //audio_recorder_destroy (recorder);
         audio_pipeline_stop(pipeline);
         audio_pipeline_wait_for_stop(pipeline);
-        //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
-        //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
+        
         
         google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
         vTaskDelay(20);
         while(google_tts_check_event_finish(tts, &msg)){
             ESP_LOGI(TAG2, "%d",google_tts_check_event_finish(tts, &msg));
-        }
+        }*/
 
     } else if (AUDIO_REC_VAD_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_START");
@@ -149,11 +148,12 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGE(TAG2, "rec start send failed");
             }
         }
+        /*
         google_tts_stop(tts);
         ESP_LOGI(TAG, "[ * ] Resuming pipeline");
         google_sr_start(sr);
         ESP_LOGI(TAG, "[ * ] Stop pipeline");
-
+*/
         /*
         
         while (1) {
@@ -277,8 +277,9 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 */
     } else if (AUDIO_REC_VAD_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_STOP");
-        char *original_text = google_sr_stop(sr);
-        ESP_LOGE(TAG, "text : %s", original_text);
+        
+        //char *original_text = google_sr_stop(sr);
+        //ESP_LOGE(TAG, "text : %s", original_text);
         if (voice_reading) {
             int msg2 = REC_STOP;
             if (xQueueSend(rec_q, &msg2, 0) != pdPASS) {
@@ -298,6 +299,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 
 static int input_cb_for_afe(int16_t *buffer, int buf_sz, void *user_ctx, TickType_t ticks)
 {
+    //ESP_LOGI(TAG2, "rec_engine_cb - ++++++++++++++++");
     return raw_stream_read(raw_read, (char *)buffer, buf_sz);
 }
 
@@ -379,7 +381,7 @@ static void start_recorder()
 #endif
     audio_rec_cfg_t cfg = AUDIO_RECORDER_DEFAULT_CFG();
     cfg.read = (recorder_data_read_t)&input_cb_for_afe;
-    //cfg.sr_handle = recorder_sr_create(&recorder_sr_cfg, &cfg.sr_iface);
+    cfg.sr_handle = recorder_sr_create(&recorder_sr_cfg, &cfg.sr_iface);
 #if RECORDER_ENC_ENABLE == (true)
     cfg.encoder_handle = recorder_encoder_create(&recorder_encoder_cfg, &cfg.encoder_iface);
 #endif
@@ -497,26 +499,48 @@ void chatbot_task(void *pv)
 
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
-    //audio_pipeline_stop(pipeline);
-    //audio_pipeline_wait_for_stop(pipeline);
+    AUDIO_MEM_SHOW(TAG);
     ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
     ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
-    //google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
+    //audio_recorder_destroy (recorder);
+    //audio_pipeline_stop(pipeline);
+    //audio_pipeline_wait_for_stop(pipeline);
+    //AUDIO_MEM_SHOW(TAG);
+    //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
+    //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
+    //google_tts_start(tts, "hola", GOOGLE_TTS_LANG);
+    esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
     
     while (true) {
-        ESP_LOGW(TAG2, "+++++++++++++++++++++++++++++++++++++++++++++++++");
+        
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {
             switch (msg_2) {
                 case REC_START: {
                     ESP_LOGW(TAG2, "voice read begin");
                     delay = 0;
                     voice_reading = true;
-                    break;
+                    while(is_wake){
+                        vTaskDelay(200);
+            audio_recorder_destroy (recorder);
+            audio_pipeline_stop(pipeline);
+            audio_pipeline_wait_for_stop(pipeline);
+            //audio_pipeline_unlink(pipeline);
+            //audio_pipeline_deinit(pipeline);
+            vTaskDelay(100);
+        
+            google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
+            while(1){
+                ESP_LOGW(TAG2, "tts...............");
+            }
+            
+        }
+        break;
                 }
                 case REC_STOP: {
                     ESP_LOGW(TAG2, "voice read stopped");
                     delay = portMAX_DELAY;
                     voice_reading = false;
+                    is_wake=false;
                     break;
                 }
                 case REC_CANCEL: {
@@ -528,7 +552,9 @@ void chatbot_task(void *pv)
                 default:
                     break;
             }
+            
         }
+        
     }
     vTaskDelete(NULL);
 

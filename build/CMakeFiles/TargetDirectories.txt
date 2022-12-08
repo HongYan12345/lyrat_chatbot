@@ -837,3 +837,10 @@ C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/bui
 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/playlist/CMakeFiles/rebuild_cache.dir
 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/playlist/CMakeFiles/list_install_components.dir
 C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/playlist/CMakeFiles/install/strip.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/install/strip.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/__idf_audio_flash_tone.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/install/local.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/install.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/edit_cache.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/rebuild_cache.dir
+C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/CMakeFiles/list_install_components.dir

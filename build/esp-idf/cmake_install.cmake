@@ -146,6 +146,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/input_key_service/cmake_install.cmake")
   include("C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/ota_service/cmake_install.cmake")
   include("C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/playlist/cmake_install.cmake")
+  include("C:/Users/a3761/Desktop/esp-idf/esp-adf/examples/cloud_services/lyrat_chatbot/build/esp-idf/audio_flash_tone/cmake_install.cmake")
 
 endif()
 

@@ -2,3 +2,4 @@
 0x1000 bootloader/bootloader.bin
 0x20000 $<TARGET_PROPERTY:__idf_build_target,EXECUTABLE_NAME>.bin
 0x10000 partition_table/partition-table.bin
+0x320000 ../tone/audio_tone.bin

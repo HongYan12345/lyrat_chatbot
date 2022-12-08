@@ -93,3 +93,4 @@ $<TARGET_FILE:__idf_esp_event_cast>
 $<TARGET_FILE:__idf_input_key_service>
 $<TARGET_FILE:__idf_ota_service>
 $<TARGET_FILE:__idf_playlist>
+$<TARGET_FILE:__idf_audio_flash_tone>

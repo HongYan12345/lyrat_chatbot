@@ -40,6 +40,7 @@ esp_periph_handle_t led_handle = NULL;
 google_sr_handle_t sr = NULL;
 google_tts_handle_t tts = NULL;
 bool is_wake = false;
+audio_event_iface_handle_t evt = NULL;
 
 //sr tts
 void google_sr_begin(google_sr_handle_t sr)
@@ -60,52 +61,11 @@ enum _rec_msg_id {
 
 static char *TAG2 = "wwe_example";
 
-static esp_audio_handle_t     player        = NULL;
 static audio_rec_handle_t     recorder      = NULL;
 static audio_element_handle_t raw_read      = NULL;
 static QueueHandle_t          rec_q         = NULL;
 static bool                   voice_reading = false;
-
-static esp_audio_handle_t setup_player()
-{
-    esp_audio_cfg_t cfg = DEFAULT_ESP_AUDIO_CONFIG();
-    audio_board_handle_t board_handle = audio_board_init();
-
-    cfg.vol_handle = board_handle->audio_hal;
-    cfg.vol_set = (audio_volume_set)audio_hal_set_volume;
-    cfg.vol_get = (audio_volume_get)audio_hal_get_volume;
-    cfg.resample_rate = 48000;
-    cfg.prefer_type = ESP_AUDIO_PREFER_MEM;
-
-    player = esp_audio_create(&cfg);
-    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
-
-    // Create readers and add to esp_audio
-    tone_stream_cfg_t tone_cfg = TONE_STREAM_CFG_DEFAULT();
-    tone_cfg.type = AUDIO_STREAM_READER;
-    esp_audio_input_stream_add(player, tone_stream_init(&tone_cfg));
-
-    // Add decoders and encoders to esp_audio
-    mp3_decoder_cfg_t mp3_dec_cfg = DEFAULT_MP3_DECODER_CONFIG();
-    mp3_dec_cfg.task_core = 1;
-    esp_audio_codec_lib_add(player, AUDIO_CODEC_TYPE_DECODER, mp3_decoder_init(&mp3_dec_cfg));
-
-    // Create writers and add to esp_audio
-    i2s_stream_cfg_t i2s_writer = I2S_STREAM_CFG_DEFAULT();
-    i2s_writer.i2s_config.sample_rate = 48000;
-    i2s_writer.i2s_config.bits_per_sample = BITS_PER_SAMPLE;
-    i2s_writer.type = AUDIO_STREAM_WRITER;
-
-    esp_audio_output_stream_add(player, i2s_stream_init(&i2s_writer));
-
-    // Set default volume
-    esp_audio_vol_set(player, 60);
-    AUDIO_MEM_SHOW(TAG2);
-
-    ESP_LOGI(TAG2, "esp_audio instance is:%p\r\n", player);
-    return player;
-}
-
+static bool is_finish = false;
 
 static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 {
@@ -121,24 +81,27 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
     int time = 0;
     int range = 0;
     char *text = "";
-    audio_event_iface_msg_t msg;
+    //audio_event_iface_msg_t msg;
     if (AUDIO_REC_WAKEUP_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_START");
         is_wake=true;
-        esp_audio_sync_play(player, tone_uri[TONE_TYPE_DINGDONG], 0);
-        /*
-        audio_recorder_wakenet_enable(recorder, false);
-        audio_recorder_multinet_enable(recorder, false);
-        //audio_recorder_destroy (recorder);
-        audio_pipeline_stop(pipeline);
-        audio_pipeline_wait_for_stop(pipeline);
-        
+        //audio_recorder_wakenet_enable(recorder, false);
         
         google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
-        vTaskDelay(20);
-        while(google_tts_check_event_finish(tts, &msg)){
-            ESP_LOGI(TAG2, "%d",google_tts_check_event_finish(tts, &msg));
-        }*/
+        //vTaskDelay(800);
+        while(1){
+            audio_event_iface_msg_t msg;
+            audio_event_iface_listen(evt, &msg, portMAX_DELAY);
+            ESP_LOGI(TAG, "[ * ] Event received: src_type:%d, source:%p cmd:%d, data:%p, data_len:%d",
+                 msg.source_type, msg.source, msg.cmd, msg.data, msg.data_len);
+
+            ESP_LOGI(TAG2, "tts..................%d", google_tts_check_event_finish(tts, &msg));
+            if(google_tts_check_event_finish(tts, &msg)){
+                ESP_LOGI(TAG2, "tts finish");
+                break;
+            }
+        }
+        
 
     } else if (AUDIO_REC_VAD_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_START");
@@ -148,15 +111,14 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGE(TAG2, "rec start send failed");
             }
         }
-        /*
+        
         google_tts_stop(tts);
         ESP_LOGI(TAG, "[ * ] Resuming pipeline");
         google_sr_start(sr);
-        ESP_LOGI(TAG, "[ * ] Stop pipeline");
-*/
-        /*
+        
         
         while (1) {
+            ESP_LOGI(TAG, "[ * ] Start sr");
             audio_event_iface_msg_t msg;
         
         if (audio_event_iface_listen(evt, &msg, portMAX_DELAY) != ESP_OK) {
@@ -173,14 +135,6 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             continue;
         }
 
-        // It's MODE button
-        if ((int)msg.data == get_input_mode_id()) {
-            break;
-        }
-
-        if ((int)msg.data != get_input_rec_id()) {
-            continue;
-        }
             google_tts_stop(tts);
             ESP_LOGI(TAG, "[ * ] Resuming pipeline");
             google_sr_start(sr);
@@ -188,7 +142,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             //periph_led_stop(led_handle, get_green_led_gpio());
 
             char *original_text = google_sr_stop(sr);
-        
+        /*
             if (original_text == NULL) {
                 continue;
             }
@@ -260,21 +214,13 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             else{
                 ESP_LOGI(TAG, "[ * ] error");
                 text = send_error();
-            }
+            }*/
             ESP_LOGI(TAG, "[ * ] next");
             google_tts_start(tts, text, GOOGLE_TTS_LANG);
 
         }
         ESP_LOGI(TAG, "[ 6 ] Stop audio_pipeline");
-        google_sr_destroy(sr);
-        google_tts_destroy(tts);
-        esp_periph_set_stop_all(set);
-        audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
 
-        audio_event_iface_destroy(evt);
-        esp_periph_set_destroy(set);
-        vTaskDelete(NULL);
-*/
     } else if (AUDIO_REC_VAD_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_STOP");
         
@@ -291,6 +237,12 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_END");
         google_tts_stop(tts);
         google_sr_stop(sr);
+        //is_finish = true;
+        if(!is_finish){
+            google_tts_start(tts, "no entiendo, llama me otra vez", GOOGLE_TTS_LANG);
+            vTaskDelay(1000);
+        }
+        esp_restart();
     } else {
         ESP_LOGE(TAG2, "Unkown event");
     }
@@ -299,7 +251,6 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 
 static int input_cb_for_afe(int16_t *buffer, int buf_sz, void *user_ctx, TickType_t ticks)
 {
-    //ESP_LOGI(TAG2, "rec_engine_cb - ++++++++++++++++");
     return raw_stream_read(raw_read, (char *)buffer, buf_sz);
 }
 
@@ -462,10 +413,8 @@ void chatbot_task(void *pv)
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
 
     ESP_LOGI(TAG, "[ 2 ] Start codec chip");
-    //esp_audio_cfg_t cfg = DEFAULT_ESP_AUDIO_CONFIG();
-    //audio_board_handle_t board_handle = audio_board_init();
-    //audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
-    setup_player();
+    audio_board_handle_t board_handle = audio_board_init();
+    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
     AUDIO_MEM_SHOW(TAG);
     start_recorder();
     AUDIO_MEM_SHOW(TAG);
@@ -486,7 +435,7 @@ void chatbot_task(void *pv)
 
     ESP_LOGI(TAG, "[ 4 ] Set up  event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
-    audio_event_iface_handle_t evt = audio_event_iface_init(&evt_cfg);
+    evt = audio_event_iface_init(&evt_cfg);
 
     ESP_LOGI(TAG, "[4.1] Listening event from the pipeline");
     google_sr_set_listener(sr, evt);
@@ -500,29 +449,27 @@ void chatbot_task(void *pv)
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
     AUDIO_MEM_SHOW(TAG);
-    ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
-    ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
 
-    esp_audio_sync_play(player, tone_uri[TONE_TYPE_HAODE], 0);
-    /*
-    audio_recorder_wakenet_enable(recorder, false);
-    audio_recorder_multinet_enable(recorder, false);
-    audio_recorder_destroy (recorder);
-    audio_pipeline_stop(pipeline);
-    audio_pipeline_wait_for_stop(pipeline);
-    audio_pipeline_terminate(pipeline);
-    AUDIO_MEM_SHOW(TAG);
-    //ESP_LOGE(TAG2, "free heap size: %d",  esp_get_free_heap_size());
-    //ESP_LOGE(TAG2, "minimum free heap size: %d",  esp_get_minimum_free_heap_size());
-    google_tts_start(tts, "hola", GOOGLE_TTS_LANG);*/
     while (true) {
-        
+        if(is_finish){
+            audio_recorder_destroy (recorder);
+            audio_pipeline_stop(pipeline);
+            audio_pipeline_wait_for_stop(pipeline);
+            audio_pipeline_terminate(pipeline);
+            audio_pipeline_unlink(pipeline);
+            start_recorder();
+            is_finish=false;
+        }
+        while(is_wake){
+            //ESP_LOGI(TAG2, "wake up end");
+        }
         if (xQueueReceive(rec_q, &msg_2, delay) == pdTRUE) {
             switch (msg_2) {
                 case REC_START: {
                     ESP_LOGW(TAG2, "voice read begin");
                     delay = 0;
                     voice_reading = true;
+                    /*
                     while(is_wake){
                         vTaskDelay(200);
             audio_recorder_destroy (recorder);
@@ -537,7 +484,7 @@ void chatbot_task(void *pv)
                 ESP_LOGW(TAG2, "tts...............");
             }
             
-        }
+        }*/
         break;
                 }
                 case REC_STOP: {
@@ -560,6 +507,16 @@ void chatbot_task(void *pv)
         }
         
     }
+    audio_recorder_destroy (recorder);
+    audio_pipeline_stop(pipeline);
+    audio_pipeline_wait_for_stop(pipeline);
+    google_sr_destroy(sr);
+    google_tts_destroy(tts);
+    esp_periph_set_stop_all(set);
+    audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
+
+    audio_event_iface_destroy(evt);
+    esp_periph_set_destroy(set);
     vTaskDelete(NULL);
 
     

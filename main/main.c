@@ -78,8 +78,8 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
     int a = 0;
     int *pos = &a;
     int tem_or_hum = 0;
-    int time = 0;
-    int range = 0;
+    int time = 1;
+    int range = 1;
     char *text = "";
     //audio_event_iface_msg_t msg;
     if (AUDIO_REC_WAKEUP_START == type) {
@@ -115,8 +115,15 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
         google_tts_stop(tts);
         ESP_LOGI(TAG, "[ * ] Resuming pipeline");
         google_sr_start(sr);
-        
-        
+        ESP_LOGI(TAG, "[ * ] Start sr");
+        vTaskDelay(800);
+        char *original_text = google_sr_stop(sr);
+        //ESP_LOGI(TAG, "Original text = %s", original_text);
+        text = send_text(tem_or_hum, time, range);
+        is_finish = true;
+        google_tts_start(tts, text, GOOGLE_TTS_LANG);
+        vTaskDelay(800);
+        /*
         while (1) {
             ESP_LOGI(TAG, "[ * ] Start sr");
             audio_event_iface_msg_t msg;
@@ -142,7 +149,7 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             //periph_led_stop(led_handle, get_green_led_gpio());
 
             char *original_text = google_sr_stop(sr);
-        /*
+        
             if (original_text == NULL) {
                 continue;
             }
@@ -214,11 +221,14 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             else{
                 ESP_LOGI(TAG, "[ * ] error");
                 text = send_error();
-            }*/
+            }
+
+            
             ESP_LOGI(TAG, "[ * ] next");
             google_tts_start(tts, text, GOOGLE_TTS_LANG);
+            
 
-        }
+        }*/
         ESP_LOGI(TAG, "[ 6 ] Stop audio_pipeline");
 
     } else if (AUDIO_REC_VAD_END == type) {

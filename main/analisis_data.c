@@ -212,7 +212,7 @@ static void http_get_humedad(int time, int range){
 
 static void http_get_token()
 {
-    
+    ESP_LOGI(TAG, "[x] get token start");
     esp_http_client_config_t config = {
         .event_handler = _http_event_handler,
         .url = "https://thingsboard.cloud:443/api/auth/login",
@@ -239,6 +239,7 @@ static void http_get_token()
             cJSON* cjson_token = cJSON_GetObjectItem(root,"token");
             token = cjson_token->valuestring;
             ESP_LOGI(TAG, "[x] get token finish");
+            ESP_LOGI(TAG, "[x] token: %s", token);
 
     } else {
         ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));

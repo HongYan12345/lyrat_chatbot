@@ -43,8 +43,9 @@ static const char *TAG = "ANALISIS_DATA";
 
 char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
 char output_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
-char *token = "";
-char *revolve_api = "";
+char *token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhMzc2MTg1MzgyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImViZWEzMWUwLTc5NzItMTFlZC1iNTgxLWNiMmRjOWJhOTg4ZCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwic2Vzc2lvbklkIjoiY2M1OWJlMWEtMWUyZC00YzRjLWEyODgtNmI5YWM2N2EwZDcyIiwiaXNzIjoidGhpbmdzYm9hcmQuaW8iLCJpYXQiOjE2NzA3NzcwMjQsImV4cCI6MTY3MjU3NzAyNCwiZmlyc3ROYW1lIjoi6bi_5b2mIiwibGFzdE5hbWUiOiLosKIiLCJlbmFibGVkIjp0cnVlLCJwcml2YWN5UG9saWN5QWNjZXB0ZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwidGVuYW50SWQiOiJlYTk0M2VkMC03OTcyLTExZWQtYjU4MS1jYjJkYzliYTk4OGQiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIn0.9XNjb3rGl7Rf84UbBXlA4e1IQ0QXoZafFSnizWxRuv3v3hzcbCerCZ4KfIEErP8-D2jlwfAxWg3CgEBIkfOCeg";
+//char *token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJob25neWFuLnhpZUBhbHVtbm9zLnVwbS5lcyIsInVzZXJJZCI6IjFkMTUzNjAwLTYxY2UtMTFlZC04YWIxLWViZThiMTQyMjAxNCIsInNjb3BlcyI6WyJURU5BTlRfQURNSU4iXSwiaXNzIjoidGhpbmdzYm9hcmQuY2xvdWQiLCJpYXQiOjE2NzEwMTg2NDQsImV4cCI6MTY3MTA0NzQ0NCwiZmlyc3ROYW1lIjoiSG9uZ3lhbiIsImxhc3ROYW1lIjoiWGllIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJpc0JpbGxpbmdTZXJ2aWNlIjpmYWxzZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJ0ZXJtc09mVXNlQWNjZXB0ZWQiOnRydWUsInRlbmFudElkIjoiMWJjODQzYTAtNjFjZS0xMWVkLThhYjEtZWJlOGIxNDIyMDE0IiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.OSMKpAINbVpej-i0yUpQROkKs6eSbhwgACkHD0Pp0aFwVzGJ-nWzAfIW49Yk9hHVHs2h0O0X5JjMWaNDHWVjog";
+char revolve_api[10] = "";
 
 
 
@@ -120,14 +121,58 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 static void http_get_temperatura_interior(int time, int range){
     int content_length = 0;
-    char str[1024];
+    char str[800];
     memset(str, 0, sizeof(str));
     strcat(str, "Bearer ");
     strcat(str ,token);
+    char url[150];
+    memset(url, 0, sizeof(url));
+    strcat(url, "https://demo.thingsboard.io:443/api/plugins/telemetry/DEVICE/31d9ca30-7973-11ed-b581-cb2dc9ba988d/values/attributes?keys=");
+    
+    if(range == 4){
+        strcat(url ,"temp_ahora");
+    }
+    else if(time == 1 && range == 1){
+        strcat(url ,"temp_max_hoy");
+    }
+    else if(time == 2 && range == 1){
+        strcat(url ,"temp_max_ayer");
+    }
+    else if(time == 3 && range == 1){
+        strcat(url ,"temp_max_semana");
+    }
+    else if(time == 4 && range == 1){
+        strcat(url ,"temp_max_mes");
+    }
+    else if(time == 1 && range == 2){
+        strcat(url ,"temp_min_hoy");
+    }
+    else if(time == 2 && range == 2){
+        strcat(url ,"temp_min_ayer");
+    }
+    else if(time == 3 && range == 2){
+        strcat(url ,"temp_min_semana");
+    }
+    else if(time == 4 && range == 2){
+        strcat(url ,"temp_min_mes");
+    }
+    else if(time == 1 && range == 3){
+        strcat(url ,"temp_media_hoy");
+    }
+    else if(time == 2 && range == 3){
+        strcat(url ,"temp_media_ayer");
+    }
+    else if(time == 3 && range == 3){
+        strcat(url ,"temp_media_semana");
+    }
+    else if(time == 4 && range == 3){
+        strcat(url ,"temp_media_mes");
+    }
 
     esp_http_client_config_t config = {
         .event_handler = _http_event_handler,
-        .url = "https://thingsboard.cloud:443/api/plugins/telemetry/DEVICE/d5c06100-61d0-11ed-b28a-eb999599ab40/values/timeseries?keys=temperature",
+        .url = url,
+        //.url="https://thingsboard.cloud:443/api/plugins/telemetry/DEVICE/d5c06100-61d0-11ed-b28a-eb999599ab40/values/timeseries?keys=temperature",
         .buffer_size_tx = 1024,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -151,10 +196,14 @@ static void http_get_temperatura_interior(int time, int range){
                 esp_http_client_get_content_length(client));
                 cJSON* root = NULL;
                 root = cJSON_Parse(local_response_buffer);
-                cJSON* cjson_item = cJSON_GetObjectItem(root, "temperature");
-                cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
-                cJSON* cjson_temperatura = cJSON_GetObjectItem(cjson_results,"value");
-                revolve_api = cjson_temperatura->valuestring;
+
+                cJSON* cjson_item =  cJSON_GetArrayItem(root,0);
+                cJSON* cjson_result = cJSON_GetObjectItem(cjson_item,"value");
+                sprintf(revolve_api, "%.1f", cjson_result->valuedouble);
+                //cJSON* cjson_item = cJSON_GetObjectItem(root, "temperature");
+                //cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
+                //cJSON* cjson_temperatura = cJSON_GetObjectItem(cjson_results,"value");
+                //revolve_api = cjson_temperatura->valuestring;
                 ESP_LOGI(TAG, "[x] get temperatura finish : %s", revolve_api);
             } else {
                 ESP_LOGE(TAG, "Failed to read response");
@@ -200,7 +249,7 @@ static void http_get_humedad(int time, int range){
                 cJSON* cjson_item = cJSON_GetObjectItem(root, "Temperatura Interior");
                 cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
                 cJSON* cjson_temperatura = cJSON_GetObjectItem(cjson_results,"value");
-                revolve_api = cjson_temperatura->valuestring;
+                //revolve_api = cjson_temperatura->valuestring;
                 ESP_LOGI(TAG, "[x] get temperatura finish : %s", revolve_api);
             } else {
                 ESP_LOGE(TAG, "Failed to read response");
@@ -248,7 +297,7 @@ static void http_get_token()
     esp_http_client_cleanup(client);
 }
 
-
+/*
 char *send_problema(const char *text, int *pos){
     ESP_LOGI(TAG, "[x] analisis data : %s", text);
     char *text_return = "";
@@ -280,19 +329,20 @@ char *send_problema(const char *text, int *pos){
     }
     
     return text_return;
-}
+}*/
+
 char *send_text(int tem_or_hum, int time, int range){
     //根据三个值判断具体的查询数据
-    http_get_token();
+    //http_get_token();
     static char *text_return = "";
     static char test_text[1024];
-    if(tem_or_hum == 0){
+    if(tem_or_hum == 1){
         http_get_temperatura_interior(time, range);
         ESP_LOGI(TAG, "temperatura: %s", revolve_api);
         memset(test_text, 0, sizeof(test_text));
         strcat(test_text,"La temperatura ");
     }
-    else if(tem_or_hum == 1){
+    else if(tem_or_hum == 2){
         http_get_humedad(time, range);
         ESP_LOGI(TAG, "humedad: %s", revolve_api);
         memset(test_text, 0, sizeof(test_text));
@@ -303,7 +353,11 @@ char *send_text(int tem_or_hum, int time, int range){
         return text_return;
     }
 
-    if(range == 1){
+    if(range == 4){
+        //max
+        strcat(test_text,"ahora");
+    }
+    else if(range == 1){
         //max
         strcat(test_text,"maxima");
     }
@@ -320,21 +374,24 @@ char *send_text(int tem_or_hum, int time, int range){
         return text_return;
     }
 
-    if(time == 1){
+    if(range == 4){
+        strcat(test_text,"es ");
+    }
+    else if(time == 1){
         //hoy
-        strcat(test_text,"de hoy es");
+        strcat(test_text,"de hoy es ");
     }
     else if(time == 2){
         //ayer
-        strcat(test_text,"de ayer es");
+        strcat(test_text,"de ayer es ");
     }
     else if(time == 3){
         //semana
-        strcat(test_text,"de semana es");
+        strcat(test_text,"de semana es ");
     }
     else if(time == 4){
         //mes
-        strcat(test_text,"de mes es");
+        strcat(test_text,"de mes es ");
     }
     else{
         text_return = send_error();
@@ -348,7 +405,7 @@ char *send_text(int tem_or_hum, int time, int range){
     return text_return;
 }
 char *send_error(){
-    static char *text_error = "no entiendo, pregunta otra vez";
+    static char *text_error = "no entiendo, llamame otra vez";
     return text_error;
 
 }

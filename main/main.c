@@ -46,7 +46,7 @@ audio_event_iface_handle_t evt = NULL;
 void google_sr_begin(google_sr_handle_t sr)
 {
     if (led_handle) {
-        periph_led_blink(led_handle, get_green_led_gpio(), 500, 500, true, -1, 0);
+        periph_led_blink(led_handle, get_blue_led_gpio(), 500, 500, true, -1, 0);
     }
     
     ESP_LOGW(TAG, "Start speaking now");
@@ -75,20 +75,17 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 #else
     tcpip_adapter_init();
 #endif
-    int a = 0;
-    int *pos = &a;
+    //int a = 0;
+    //int *pos = &a;
     int tem_or_hum = 0;
-    int time = 1;
-    int range = 1;
-    char *text = "";
-    //audio_event_iface_msg_t msg;
+    int time = 0;
+    int range = 0;
+    char *text = "no entiendo, llama me otra vez";
     if (AUDIO_REC_WAKEUP_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_START");
         is_wake=true;
         //audio_recorder_wakenet_enable(recorder, false);
-        
-        google_tts_start(tts, "hola, soy demo", GOOGLE_TTS_LANG);
-        //vTaskDelay(800);
+        google_tts_start(tts, "hola , soy un demo", GOOGLE_TTS_LANG);
         while(1){
             audio_event_iface_msg_t msg;
             audio_event_iface_listen(evt, &msg, portMAX_DELAY);
@@ -100,9 +97,13 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGI(TAG2, "tts finish");
                 break;
             }
+
         }
         
-
+        google_tts_stop(tts);
+        ESP_LOGI(TAG, "[ * ] Resuming pipeline");
+        google_sr_start(sr);
+        ESP_LOGI(TAG, "[ * ] Start sr");
     } else if (AUDIO_REC_VAD_START == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_START");
         if (!voice_reading) {
@@ -111,18 +112,8 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
                 ESP_LOGE(TAG2, "rec start send failed");
             }
         }
-        
-        google_tts_stop(tts);
-        ESP_LOGI(TAG, "[ * ] Resuming pipeline");
-        google_sr_start(sr);
-        ESP_LOGI(TAG, "[ * ] Start sr");
-        vTaskDelay(800);
-        char *original_text = google_sr_stop(sr);
+
         //ESP_LOGI(TAG, "Original text = %s", original_text);
-        text = send_text(tem_or_hum, time, range);
-        is_finish = true;
-        google_tts_start(tts, text, GOOGLE_TTS_LANG);
-        vTaskDelay(800);
         /*
         while (1) {
             ESP_LOGI(TAG, "[ * ] Start sr");
@@ -233,9 +224,6 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
 
     } else if (AUDIO_REC_VAD_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_VAD_STOP");
-        
-        //char *original_text = google_sr_stop(sr);
-        //ESP_LOGE(TAG, "text : %s", original_text);
         if (voice_reading) {
             int msg2 = REC_STOP;
             if (xQueueSend(rec_q, &msg2, 0) != pdPASS) {
@@ -243,15 +231,58 @@ static esp_err_t rec_engine_cb(audio_rec_evt_t type, void *user_data)
             }
         }
 
+        char *original_text = google_sr_stop(sr);
+        periph_led_stop(led_handle, get_blue_led_gpio());
+        if (original_text == NULL) {
+            text = "no entiendo, llama me otra vez";
+        }
+        else{
+            if(strcmp(original_text, "temperatura")){
+                tem_or_hum = 1;
+            }
+            else if(strcmp(original_text, "humedad")){
+                tem_or_hum = 2;
+            }
+        
+            if(strcmp(original_text, "ahora")){
+                range = 4;
+            }
+            else if(strcmp(original_text, "maximo")){
+                range = 1;
+            }
+            else if(strcmp(original_text, "minimo")){
+                range = 2;
+            }
+            else if(strcmp(original_text, "media")){
+                range = 3;
+            }
+            
+            if(strcmp(original_text, "hoy")){
+                time = 1;
+            }
+            else if(strcmp(original_text, "ayer")){
+                time = 2;
+            }
+            else if(strcmp(original_text, "semana")){
+                time = 3;
+            }
+            else if(strcmp(original_text, "mes")){
+                time = 4;
+            }
+
+            text = send_text(tem_or_hum, time, range);
+        }
+
     } else if (AUDIO_REC_WAKEUP_END == type) {
         ESP_LOGI(TAG2, "rec_engine_cb - REC_EVENT_WAKEUP_END");
         google_tts_stop(tts);
         google_sr_stop(sr);
+        
         //is_finish = true;
-        if(!is_finish){
-            google_tts_start(tts, "no entiendo, llama me otra vez", GOOGLE_TTS_LANG);
-            vTaskDelay(1000);
-        }
+        
+        google_tts_start(tts, text,  GOOGLE_TTS_LANG);
+        text =  "no entiendo, llama me otra vez";
+        vTaskDelay(1200);
         esp_restart();
     } else {
         ESP_LOGE(TAG2, "Unkown event");
@@ -405,7 +436,7 @@ void chatbot_task(void *pv)
         .gpio_mask = (1ULL << get_input_mode_id()) | (1ULL << get_input_rec_id()),
     };
     esp_periph_handle_t button_handle = periph_button_init(&btn_cfg);
-
+*/
     periph_led_cfg_t led_cfg = {
         .led_speed_mode = LEDC_LOW_SPEED_MODE,
         .led_duty_resolution = LEDC_TIMER_10_BIT,
@@ -414,11 +445,11 @@ void chatbot_task(void *pv)
     };
     led_handle = periph_led_init(&led_cfg);
 
-*/
+
     // Start wifi & button peripheral
     //esp_periph_start(set, button_handle);
     esp_periph_start(set, wifi_handle);
-    //esp_periph_start(set, led_handle);
+    esp_periph_start(set, led_handle);
 
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
 
@@ -459,7 +490,11 @@ void chatbot_task(void *pv)
     int msg_2 = 0;
     TickType_t delay = portMAX_DELAY;
     AUDIO_MEM_SHOW(TAG);
-
+    google_sr_start(sr);
+    ESP_LOGI(TAG, "[ * ] Start sr");
+    vTaskDelay(1000);
+    char *original_text = google_sr_stop(sr);
+    periph_led_stop(led_handle, get_blue_led_gpio());
     while (true) {
         if(is_finish){
             audio_recorder_destroy (recorder);
